@@ -1,0 +1,261 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script>
+
+        cur_song = '';
+        next_song = '';
+        isShown = false;
+        countUp = 0;
+
+        function getNewInfo() { 
+            var songInfo = new Array();
+            $.ajax({
+                async: false,
+                type: 'GET',
+                url: 'FullInfo.txt',
+                contentType: "text",
+                success: function(data) {
+                    songInfo = data.split('|');
+                }
+            });
+            return songInfo;
+        }
+
+        function updateTrack(info) {
+            console.log(info);
+
+            if(info[0] != '') {
+                $('#track').html(info[0]);
+            } else {
+                $('#track').html("Track");
+            };
+
+            if(info[1] != '') {
+                $('#album').html(info[1]);
+            } else {
+                $('#album').html("Album");
+            }
+
+            if(info[2] != '') {
+                $('#artist').html(info[2]);
+            } else {
+                $('#artist').html("Artist");
+            }
+
+            $("#artwork img").attr('src', 'cover.png' + '?' + new Date().getTime())
+        };
+
+        function infoUpdate() {
+            info = getNewInfo()
+            if (info.length <= 1) {return;};
+            if (info[0] == cur_song && countUp < 6) {
+                countUp++;
+                return;
+            }
+            countUp = 0;
+            cur_song = info[0];
+            updateTrack(info);
+            if (!isShown) {
+                animate(true, function(){});
+                setTimeout(() => {animate(false)}, 15000)
+            }
+   
+        }
+
+        function animate(b, f) {
+            if (b) {
+                isShown = true;
+                $("article").animate({
+                    left: '0%'
+                }, 4000);
+                $("#metabloc").animate({
+                    left: '130px',
+                    opacity: '1'
+                }, 4000);
+                
+            } else {
+                isShown = false;
+                $("article").animate({
+                    left: '-50%'
+                }, 4000);
+                $("#metabloc").animate({
+                    left: '0px',
+                    opacity: '0'
+                }, 4000)
+            }
+        }
+
+        $(document).ready(function () {
+            infoUpdate();
+
+            var interval = setInterval(infoUpdate, 12000)
+        });
+
+    </script>
+    <style>
+    @keyframes intro-all {
+        0% {
+            left: -50%;
+        }
+        20% {
+            left: 0;
+        }
+        80% {
+            left: 0;
+        }
+        100% {
+            left: -50%;
+        }
+    }
+
+    @keyframes intro-text {
+        0% {
+            left: 0;
+            opacity: 0;
+        }
+        10% {
+            left: 0;
+            opacity: 0;
+        }
+        20% {
+            left: 130px;
+            opacity: 1;
+        }
+        80% {
+            left: 130px;
+            opacity: 1;
+        }
+        90% {
+            left: 0;
+            opacity: 0;
+        }
+        100% {
+            left: 0;
+            opacity: 0;
+        }
+    }
+
+    @keyframes bgrotation {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    
+    html {
+        font-family: 'Montserrat';
+        font-size: 2em;
+        color: white;
+        height: 100vh;
+        overflow: hidden;
+    }
+    article {
+        font-size: .8em;
+        position: absolute;
+        min-width: 30vw;
+        margin: 50px 0;
+        padding: 20px 40px;
+        background-image: linear-gradient(to right, rgba(0,0,0,1), rgba(0,0,0,0));
+        display: flex;
+        grid-template-columns: 9vw 19vw;
+        grid-template-rows: auto;
+        bottom: 0%;
+        left: -50%;
+        vertical-align: middle;
+        align-items: center;
+        /* animation: intro-all 20s ease 2s; */
+        /* overflow: hidden; */
+    }
+
+    #metadata {
+        padding: 10px 20px;
+        align-items: center;
+        display: block;
+    }
+
+    #metabloc {
+        position: absolute;
+        vertical-align: middle;
+        left: 0;
+        opacity: 0;
+        margin: 0 20px;
+        /* animation: intro-text 20s ease 2s; */
+        width: fit-content;
+    }
+
+    .metadata {
+        
+    }
+
+    #musicbg {
+        position: absolute;
+        width: 30%;
+        opacity: .5;
+        left: -100;
+        animation: bgrotation 5s infinite linear;
+        fill: white;
+    }
+
+    #artwork {
+        grid-row-start: 1;
+        grid-row-end: 4;
+        width: auto;
+        z-index: 150;
+    }
+
+    #artwork img {
+        
+        width: 100px;
+    }
+
+    #track {
+        font-weight: bold
+    }
+
+    #album {
+        font-size: .8em;
+        font-style: italic;
+        margin-bottom: 20px;
+        
+    }
+
+    #artist {
+        
+        font-size: .7em;
+    }
+
+    
+    </style>
+</head>
+<body>
+    <article>
+        <svg id="musicbg" version="1.1" id="CD" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+            viewBox="0 0 68 68" style="enable-background:new 0 0 68 68;" xml:space="preserve">
+        <path id="G" class="st0" d="M34,68C15.2,68,0,52.8,0,34S15.2,0,34,0s34,15.2,34,34S52.8,68,34,68z M10.9,43.6
+            c-0.5,0.2-0.8,0.8-0.5,1.3c0,0,0,0,0.2,0.4c1.3,2.6,3,5,5.1,7.1c2.1,2.1,4.5,3.8,7.1,5.1c0.4,0.2,0.4,0.2,0.4,0.2
+            c0.5,0.2,1.1,0,1.3-0.5l0.8-1.8c0.2-0.5,0-1.1-0.5-1.3c0,0,0.1,0.1-0.3-0.1c-2.2-1.1-4.2-2.5-6-4.3c-1.7-1.7-3.2-3.7-4.2-5.9
+            c-0.2-0.4-0.1-0.3-0.1-0.3c-0.2-0.5-0.8-0.7-1.3-0.5L10.9,43.6z M57.1,24.4c0.5-0.2,0.8-0.8,0.5-1.3c0,0,0-0.1-0.2-0.5
+            c-1.3-2.6-3-5-5-7c-2.1-2.1-4.6-3.9-7.3-5.2c-0.4-0.2-0.2-0.1-0.2-0.1c-0.5-0.2-1.1,0-1.3,0.5l-0.8,1.8c-0.2,0.5,0,1.1,0.5,1.3
+            c0,0-0.1-0.1,0.3,0.1c2.2,1.1,4.2,2.5,5.9,4.2c1.7,1.7,3.1,3.7,4.2,5.9c0.2,0.4,0.2,0.4,0.2,0.4c0.2,0.5,0.8,0.7,1.3,0.5L57.1,24.4z
+            M34,48c7.7,0,14-6.3,14-14s-6.3-14-14-14s-14,6.3-14,14S26.3,48,34,48z M34,42c-4.4,0-8-3.6-8-8s3.6-8,8-8s8,3.6,8,8S38.4,42,34,42
+            z M34,38c2.2,0,4-1.8,4-4s-1.8-4-4-4s-4,1.8-4,4S31.8,38,34,38z"/>
+        </svg>
+        <div id="artwork"><img src="cover.png" alt=""></div>
+        <div id="metabloc">
+            <div id="metadata">
+                <div id="track" class="metadata"></div>
+                <div id="album" class="metadata"></div>
+                <div id="artist" class="metadata"></div>
+            </div>
+        </div>
+    </article>
+</body>
+</html>
