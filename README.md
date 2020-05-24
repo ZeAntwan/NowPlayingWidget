@@ -8,7 +8,7 @@
 
 ## How to use
 - In Tuna, add a new "Song info output" next to the "widget.html" file.
-- Make sure the "Song format" is set to **%t|%a|%m** (Song Title | Album title | Artist)
+- Make sure the "Song format" is set to **%t|%a|%m** (Song Title | Album title | Artist) and set the file name to **"FullInfo.txt"**
 - In Tuna, set the cover path to be next to "widget.html" and make sure to use the "cover.png" for the filename
 - In OBS add a new "Browser Source" and open the "widget.html" file
 - After about 1s, if Tuna is running, you will see the widget !
