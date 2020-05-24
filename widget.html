@@ -22,6 +22,8 @@
                 success: function(data) {
                     songInfo = data.split('|');
                 }
+            }).fail(function(){
+                songInfo = ["Error","Song info couldn't be found","Please check file name"]
             });
             return songInfo;
         }
@@ -197,7 +199,7 @@
 
     #musicbg {
         position: absolute;
-        width: 30%;
+        width: 200px;
         opacity: .5;
         left: -100;
         animation: bgrotation 5s infinite linear;
