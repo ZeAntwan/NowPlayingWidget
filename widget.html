@@ -9,71 +9,11 @@
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script>
 
-        cur_song = '';
-        next_song = '';
         isShown = false;
-        countUp = 0;
-
-        function getNewInfo() { 
-            var songInfo = new Array();
-            $.ajax({
-                async: false,
-                type: 'GET',
-                url: 'FullInfo.txt',
-                contentType: "text",
-                success: function(data) {
-                    songInfo = data.split('|');
-                }
-            }).fail(function(){
-                songInfo = ["Error","Song info couldn't be found","Please check file name"]
-            });
-            return songInfo;
-        }
-
-        function updateTrack(info) {
-            console.log(info);
-
-            if(info[0] != '') {
-                $('#track').html(info[0]);
-            } else {
-                $('#track').html("Track");
-            };
-
-            if(info[1] != '') {
-                $('#album').html(info[1]);
-            } else {
-                $('#album').html("Album");
-            }
-
-            if(info[2] != '') {
-                $('#artist').html(info[2]);
-            } else {
-                $('#artist').html("Artist");
-            }
-
-            $("#artwork img").attr('src', 'cover.png' + '?' + new Date().getTime())
-        };
-
-        function infoUpdate() {
-            info = getNewInfo()
-            if (info.length <= 1) {return;};
-            if (info[0] == cur_song && countUp < 6) {
-                countUp++;
-                return;
-            }
-            countUp = 0;
-            cur_song = info[0];
-            updateTrack(info);
-            if (!isShown) {
-                animate(true, function(){});
-                setTimeout(() => {animate(false)}, 15000)
-            }
-   
-        }
 
         function animate(b, f) {
             if (b) {
-                isShown = true;
+                //isShown = true;
                 $("article").animate({
                     left: '0%'
                 }, 4000);
@@ -83,7 +23,7 @@
                 }, 4000);
                 
             } else {
-                isShown = false;
+                //isShown = false;
                 $("article").animate({
                     left: '-50%'
                 }, 4000);
@@ -95,10 +35,80 @@
         }
 
         $(document).ready(function () {
-            infoUpdate();
-
-            var interval = setInterval(infoUpdate, 12000)
+            //show();
         });
+
+        function show() {
+            if ($("#metabloc").css('opacity') == "0") {
+                isShown = false;
+            } else {
+                isShown = true;
+            }
+            if (!isShown) {
+                animate(true, function(){});
+                setTimeout(() => {animate(false)}, 15000)
+                console.log("SHOW")
+            }
+        }
+
+        var last_cover = '';
+        var last_artist = '';
+        var last_title = '';
+
+        function fetch_data() {
+            fetch('http://localhost:1608/')
+            .then(response => response.json())
+            .then(data => {
+                // data now contains the json object with song metadata
+
+                
+                // artist list
+                var artists = '';
+                var array = data['artists'];
+                for (var i = 0; i < array.length; i++) {
+                    artists += array[i];
+                    if (i < array.length - 1)
+                        artists += ', ';
+                }
+                // UPDATE TITLE
+                //document.getElementById('title').innerText = data['title'];
+                $('#track').html(data['title']);
+
+                if (data['cover_url'] !== last_cover || // Refresh only if meta data suggests that the cover changed
+                    (data['title'] !== last_title &&    // When using MPD the path is always the cover path configured in tuna
+                    artists !== last_artist))           // which means it won't change so we check against other data
+                {
+                    // Random number at the end is to prevent caching
+                    // UPDATE COVER
+                    $("#artwork img").attr('src', data['cover_url'] + '?');
+                    last_cover = data['cover_url'];
+                }
+
+                    // UPDATE ARTIST
+                    $('#artist').html(artists);
+                    $('#album').html(data['album']);
+                
+                /*var length = data['duration'];
+                var progress = data['progress'];
+                document.getElementById('progress').style.width = (progress / length) * 100 + '%';
+
+                // Timestamps
+                document.getElementById('length').innerText = format_ms(length);
+                document.getElementById('time-passed').innerText = format_ms(progress);
+                */
+                last_artist = artists;
+                if (last_title !== data['title']) {
+                    show();
+                }
+                last_title = data['title'];
+            })
+            .catch(function() {
+                // Do nothing
+            });
+        }
+        
+        setInterval(fetch_data, 500);
+        setInterval(fetch_data, 100000);
 
     </script>
     <style>
